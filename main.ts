@@ -4,7 +4,10 @@ import {
   CLONE_NEWNS,
   unshare,
   pivotRoot,
-  setHostname,
+} from "./libc/shed.ts";
+
+import { setHostname, exec } from "./libc/unistd.ts";
+import {
   mount,
   MS_REC,
   MS_PRIVATE,
@@ -18,8 +21,7 @@ import {
   MS_NOEXEC,
   MS_RELATIME,
   MS_BIND,
-  exec,
-} from "./libc.ts";
+} from "./libc/mount.ts";
 
 const LIB_ROOT = "/var/lib/runjs";
 
@@ -157,7 +159,19 @@ const child = (containerId: string, args: string[]) => {
     "gid=5,mode=620,ptmxmode=666"
   );
 
-  exec("/bin/sh", ["sh", "-i"], {
+  // Deno.mkdirSync("/dev/console", { recursive: true });
+  // mount(
+  //   "devpts",
+  //   "/dev/console",
+  //   "devpts",
+  //   MS_NOSUID | MS_NOEXEC | MS_RELATIME,
+  //   "gid=5,mode=620,ptmxmode=666"
+  // );
+
+  const binary = args[0];
+  const rest = args.slice(1);
+
+  exec(binary, rest, {
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
     TERM: "xterm",
   });
