@@ -33,9 +33,8 @@ export const cap_get_proc = () => libcap.symbols.cap_get_proc() as cap_t;
 export const cap_free = (pointer: Deno.UnsafePointer) =>
   libcap.symbols.cap_free(pointer) as number;
 
-export const cap_get_bound = (value: cap_value_t): number => {
-  return libcap.symbols.cap_get_bound(value) as number;
-};
+export const cap_get_bound = (value: cap_value_t): number =>
+  libcap.symbols.cap_get_bound(value) as number;
 
 export const cap_get_ambient = (value: cap_value_t): number =>
   libcap.symbols.cap_get_ambient(value) as number;

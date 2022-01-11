@@ -1,8 +1,7 @@
-import { isAbsolute, join } from "https://deno.land/std@0.102.0/path/mod.ts";
-import { existsSync } from "https://deno.land/std@0.102.0/fs/mod.ts";
+import { isAbsolute, join } from "https://deno.land/std@0.120.0/path/mod.ts";
 
 import { libc } from "./_libc.ts";
-import { throwForLastErrorIf, encoder } from "./_helpers.ts";
+import { throwForLastErrorIf, encoder, exists } from "./_utils.ts";
 
 export const STDIN_FILENO = 0;
 export const STDOUT_FILENO = 1;
@@ -32,7 +31,7 @@ const findProgramInPath = (fileName: string): string | null => {
 
   for (const searchPath of path.split(":")) {
     const fullPath = join(searchPath, fileName);
-    if (existsSync(fullPath)) return fullPath;
+    if (exists(fullPath)) return fullPath;
   }
 
   return null;
@@ -42,7 +41,7 @@ const resolvePath = (fileName: string): string | null => {
   if (isAbsolute(fileName)) return fileName;
 
   const path = join(Deno.cwd(), fileName);
-  if (existsSync(path)) return path;
+  if (exists(path)) return path;
   return findProgramInPath(fileName);
 };
 
@@ -85,8 +84,8 @@ export const exec = (
     pFile,
     pArgsWithNullByte,
     pEnvWithNullByte
-  );
+  ) as number;
 
   // Execve should never return on success on error -1 is returned, and errno is set appropriately.
-  throwForLastErrorIf(result as number);
+  throwForLastErrorIf(result);
 };

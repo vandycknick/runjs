@@ -1,13 +1,10 @@
 import {
-  CLONE_NEWUTS,
-  CLONE_NEWPID,
   CLONE_NEWNS,
+  CLONE_NEWUTS,
+  CLONE_NEWIPC,
+  CLONE_NEWPID,
   unshare,
   pivotRoot,
-} from "./libc/shed.ts";
-
-import { setHostname, exec } from "./libc/unistd.ts";
-import {
   mount,
   MS_REC,
   MS_PRIVATE,
@@ -21,7 +18,9 @@ import {
   MS_NOEXEC,
   MS_RELATIME,
   MS_BIND,
-} from "./libc/mount.ts";
+  setHostname,
+  exec,
+} from "./libc/mod.ts";
 
 const LIB_ROOT = "/var/lib/runjs";
 
@@ -82,7 +81,7 @@ const child = (containerId: string, args: string[]) => {
   // Ensure overlay
   const overlayRoot = `${LIB_ROOT}/containers/${containerId}`;
 
-  unshare(CLONE_NEWUTS | CLONE_NEWNS);
+  unshare(CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWIPC);
 
   // // Set hostname to containerId
   setHostname(getHostNameFromContainerId(containerId));

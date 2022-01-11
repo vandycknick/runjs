@@ -1,7 +1,5 @@
 import { libc } from "./_libc.ts";
-import { throwForLastErrorIf } from "./_helpers.ts";
-
-const encoder = new TextEncoder();
+import { throwForLastErrorIf, encoder } from "./_utils.ts";
 
 // Mount flags: https://github.com/torvalds/linux/blob/e55f0c439a2681a3c299bedd99ebe998049fa508/include/uapi/linux/mount.h
 export const MS_RDONLY = 1; /* Mount read-only */

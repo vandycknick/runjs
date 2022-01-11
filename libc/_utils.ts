@@ -10,3 +10,15 @@ export const throwForLastErrorIf = (retVal: number) => {
   const message = strerror(err);
   throw new Error(`[${err}] ${message}`);
 };
+
+export const exists = (filePath: string): boolean => {
+  try {
+    Deno.lstatSync(filePath);
+    return true;
+  } catch (err) {
+    if (err instanceof Deno.errors.NotFound) {
+      return false;
+    }
+    throw err;
+  }
+};

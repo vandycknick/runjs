@@ -31,7 +31,7 @@ export const libc = Deno.dlopen("libc.so.6", {
     result: "i32",
   },
 
-  // Technically there's no wrapper in libc for pivot_root, but glibc is so friendly that does provide one
+  // Technically there's no wrapper in libc for pivot_root, but glibc is so friendly to provide one
   pivot_root: {
     parameters: ["pointer", "pointer"],
     result: "i32",
@@ -67,8 +67,6 @@ export const libc = Deno.dlopen("libc.so.6", {
     parameters: ["i32", "pointer", "usize"],
     result: "i32",
   },
-
-  // int strerror_r(int errnum, char *buf, size_t buflen);
 
   // Private pointer to a function in libc to get static errno value, what can possible go wrong
   // https://github.com/bminor/glibc/blob/6b0978c14acc2a6b5f5dbd8e8ef75fddc6656483/csu/errno-loc.c
