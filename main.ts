@@ -27,7 +27,7 @@ const LIB_ROOT = "/var/lib/runjs";
 const getHostNameFromContainerId = (containerId: string) =>
   containerId.split("-").join("").substring(0, 13);
 
-const run = async () => {
+const run = async (args: string[]) => {
   const containerId = crypto.randomUUID();
 
   // Ensure libroot exists
@@ -67,14 +67,14 @@ ff02::2 ip6-allrouters\n`,
 
   unshare(CLONE_NEWPID);
 
-  const cmd = ["/proc/self/exe", "child", containerId, ...Deno.args];
+  const cmd = ["/proc/self/exe", "_child", containerId, ...args];
   const p = Deno.run({ cmd, uid: 0, gid: 0 });
   const status = await p.status();
 
   // Cleanup
   umount(`${overlayRoot}/merged`, MNT_DETACH | MNT_FORCE);
 
-  return status;
+  return status.code;
 };
 
 const child = (containerId: string, args: string[]) => {
@@ -86,9 +86,8 @@ const child = (containerId: string, args: string[]) => {
   // // Set hostname to containerId
   setHostname(getHostNameFromContainerId(containerId));
 
-  /* ensure that changes to our mount namespace do not "leak" to
-   * outside namespaces (same as mount --make-rprivate /)
-   */
+  // ensure that changes to our mount namespace do not "leak" to
+  // outside namespaces (same as mount --make-rprivate /)
   mount("none", "/", null, MS_REC | MS_PRIVATE, null);
 
   Deno.chdir(`${overlayRoot}/merged`);
@@ -168,13 +167,22 @@ const child = (containerId: string, args: string[]) => {
 };
 
 const main = async (args: string[]) => {
-  switch (args[0]) {
-    case "child":
-      child(args[1], args.slice(2));
+  const [command, ...rest] = args;
+  switch (command) {
+    case "run": {
+      const status = await run(rest);
+      Deno.exit(status);
       break;
+    }
+    case "_child": {
+      const [containerId, ...childArgs] = rest;
+      child(containerId, childArgs);
+      break;
+    }
     default: {
-      const status = await run();
-      Deno.exit(status.code);
+      console.log("Unknown command");
+      Deno.exit(1);
+      break;
     }
   }
 };
