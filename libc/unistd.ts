@@ -1,4 +1,4 @@
-import { isAbsolute, join } from "https://deno.land/std@0.120.0/path/mod.ts";
+import { isAbsolute, join } from "https://deno.land/std@0.121.0/path/mod.ts";
 
 import { libc } from "./_libc.ts";
 import { throwForLastErrorIf, encoder, exists } from "./_utils.ts";

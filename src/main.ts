@@ -20,7 +20,7 @@ import {
   MS_BIND,
   setHostname,
   exec,
-} from "./libc/mod.ts";
+} from "../libc/mod.ts";
 
 const LIB_ROOT = "/var/lib/runjs";
 
