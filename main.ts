@@ -158,15 +158,6 @@ const child = (containerId: string, args: string[]) => {
     "gid=5,mode=620,ptmxmode=666"
   );
 
-  // Deno.mkdirSync("/dev/console", { recursive: true });
-  // mount(
-  //   "devpts",
-  //   "/dev/console",
-  //   "devpts",
-  //   MS_NOSUID | MS_NOEXEC | MS_RELATIME,
-  //   "gid=5,mode=620,ptmxmode=666"
-  // );
-
   const binary = args[0];
   const rest = args.slice(1);
 
