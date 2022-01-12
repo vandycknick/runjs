@@ -7,7 +7,7 @@ import {
   cap_to_name,
   cap_get_bound,
   cap_get_ambient,
-} from "./libcap/mod.ts";
+} from "../libcap/mod.ts";
 
 const libc = Deno.dlopen("libc.so.6", {
   prctl: {
