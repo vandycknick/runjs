@@ -1,65 +1,64 @@
-import { printf } from "https://deno.land/std@0.121.0/fmt/printf.ts";
+import { parse } from "https://deno.land/std@0.121.0/flags/mod.ts";
+
 import {
-  CLONE_NEWNS,
-  CLONE_NEWUTS,
   CLONE_NEWIPC,
+  CLONE_NEWNS,
   CLONE_NEWPID,
-  unshare,
-  pivotRoot,
-  mount,
-  MS_REC,
-  MS_PRIVATE,
-  MS_MGC_VAL,
-  umount,
-  MNT_FORCE,
+  CLONE_NEWUTS,
+  exec,
+  fork,
+  waitPid,
   MNT_DETACH,
-  MS_RDONLY,
-  MS_NOSUID,
+  MNT_FORCE,
+  mount,
+  MS_BIND,
+  MS_MGC_VAL,
   MS_NODEV,
   MS_NOEXEC,
+  MS_NOSUID,
+  MS_PRIVATE,
+  MS_RDONLY,
+  MS_REC,
   MS_RELATIME,
-  MS_BIND,
+  pivotRoot,
   setHostname,
-  fork,
-  exec,
-  waitPid,
+  umount,
+  unshare,
 } from "../libc/mod.ts";
 
-const LIB_ROOT = "/var/lib/runjs";
+const NAME = "runjs";
+const VERSION = "1.0.0";
+const LIB_ROOT = `/var/lib/${NAME}`;
 
 const getHostNameFromContainerId = (containerId: string) =>
   containerId.split("-").join("").substring(0, 13);
 
-const run = async (args: string[]) => {
-  if (args.length === 0) {
-    throw new Error("'runjs run' requires at least 1 argument");
-  }
-
+const run = (args: string[]) => {
   const containerId = crypto.randomUUID();
 
   // Ensure libroot exists
-  await Deno.mkdir(LIB_ROOT, { recursive: true });
+  Deno.mkdirSync(LIB_ROOT, { recursive: true });
 
   // Ensure overlay
   const overlayRoot = `${LIB_ROOT}/containers/${containerId}`;
-  await Deno.mkdir(`${overlayRoot}/diff`, { recursive: true });
-  await Deno.mkdir(`${overlayRoot}/work`, { recursive: true });
-  await Deno.mkdir(`${overlayRoot}/merged`, { recursive: true });
+  Deno.mkdirSync(`${overlayRoot}/diff`, { recursive: true });
+  Deno.mkdirSync(`${overlayRoot}/work`, { recursive: true });
+  Deno.mkdirSync(`${overlayRoot}/merged`, { recursive: true });
 
-  await Deno.writeTextFile(
+  Deno.writeTextFileSync(
     `${overlayRoot}/hostname`,
     getHostNameFromContainerId(containerId),
     { create: true }
   );
 
-  await Deno.writeTextFile(
+  Deno.writeTextFileSync(
     `${overlayRoot}/hosts`,
-    `127.0.0.1       localhost
-::1     localhost ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters\n`,
+    `127.0.0.1       localhost\n` +
+      `::1     localhost ip6-localhost ip6-loopback\n` +
+      `fe00::0 ip6-localnet\n` +
+      `ff00::0 ip6-mcastprefix\n` +
+      `ff02::1 ip6-allnodes\n` +
+      `ff02::2 ip6-allrouters\n`,
     { create: true }
   );
 
@@ -187,20 +186,49 @@ const child = (containerId: string, args: string[]) => {
   });
 };
 
-const main = async (args: string[]) => {
-  const [command, ...rest] = args;
-  switch (command) {
-    case "run": {
-      const status = await run(rest);
-      Deno.exit(status);
-      break;
+const main = (args: string[]) => {
+  try {
+    if (args.length === 0) {
+      throw new Error(`"${NAME}" requires at least 1 argument`);
     }
-    default: {
-      console.log("Unknown command");
-      Deno.exit(1);
-      break;
+
+    const parsed = parse(args, {
+      boolean: ["help", "version"],
+      alias: { h: "help", v: "version" },
+    });
+
+    if (parsed.help) {
+      console.log(
+        `${NAME} ${VERSION}\n` +
+          `Mini container runtime written in TypeScript\n\n` +
+          `USAGE:\n` +
+          `     ${NAME} <binary> <args>...\n\n` +
+          `OPTIONS:\n` +
+          `     -h, --help\n` +
+          `         Prints help information\n` +
+          `     -v, --version\n` +
+          `         Prints version information`
+      );
+      return 0;
     }
+
+    if (parsed.version) {
+      console.log(VERSION);
+      return 0;
+    }
+
+    const status = run(args);
+    return status;
+  } catch (ex) {
+    console.log(
+      `\x1b[31merror\x1b[0m: ${ex.message}\n\n` +
+        `USAGE:\n` +
+        `     ${NAME} <binary> <args>... \n\n` +
+        `For more information try --help`
+    );
+    return 1;
   }
 };
 
-await main(Deno.args);
+const result = main(Deno.args);
+Deno.exit(result);
