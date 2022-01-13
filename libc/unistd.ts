@@ -45,6 +45,8 @@ const resolvePath = (fileName: string): string | null => {
   return findProgramInPath(fileName);
 };
 
+export const fork = () => libc.symbols.fork() as number;
+
 export const exec = (
   fileName: string,
   args: string[],

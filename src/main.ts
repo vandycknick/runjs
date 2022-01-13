@@ -1,3 +1,4 @@
+import { printf } from "https://deno.land/std@0.121.0/fmt/printf.ts";
 import {
   CLONE_NEWNS,
   CLONE_NEWUTS,
@@ -19,7 +20,9 @@ import {
   MS_RELATIME,
   MS_BIND,
   setHostname,
+  fork,
   exec,
+  waitPid,
 } from "../libc/mod.ts";
 
 const LIB_ROOT = "/var/lib/runjs";
@@ -28,6 +31,10 @@ const getHostNameFromContainerId = (containerId: string) =>
   containerId.split("-").join("").substring(0, 13);
 
 const run = async (args: string[]) => {
+  if (args.length === 0) {
+    throw new Error("'runjs run' requires at least 1 argument");
+  }
+
   const containerId = crypto.randomUUID();
 
   // Ensure libroot exists
@@ -65,23 +72,37 @@ ff02::2 ip6-allrouters\n`,
     `lowerdir=${LIB_ROOT}/images/ubuntu,upperdir=${overlayRoot}/diff,workdir=${overlayRoot}/work\0`
   );
 
-  unshare(CLONE_NEWPID);
+  unshare(CLONE_NEWPID | CLONE_NEWUTS | CLONE_NEWIPC);
 
-  const cmd = ["/proc/self/exe", "_child", containerId, ...args];
-  const p = Deno.run({ cmd, uid: 0, gid: 0 });
-  const status = await p.status();
+  const pid = fork();
+
+  if (pid < 0) throw new Error("An error occurred during fork()");
+
+  // Child
+  if (pid === 0) {
+    try {
+      child(containerId, args);
+      Deno.exit(0);
+    } catch {
+      Deno.exit(1);
+    }
+    return;
+  }
+
+  // Parent
+  const result = waitPid(pid);
 
   // Cleanup
   umount(`${overlayRoot}/merged`, MNT_DETACH | MNT_FORCE);
 
-  return status.code;
+  return result.code;
 };
 
 const child = (containerId: string, args: string[]) => {
   // Ensure overlay
   const overlayRoot = `${LIB_ROOT}/containers/${containerId}`;
 
-  unshare(CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWIPC);
+  unshare(CLONE_NEWNS);
 
   // // Set hostname to containerId
   setHostname(getHostNameFromContainerId(containerId));
@@ -172,11 +193,6 @@ const main = async (args: string[]) => {
     case "run": {
       const status = await run(rest);
       Deno.exit(status);
-      break;
-    }
-    case "_child": {
-      const [containerId, ...childArgs] = rest;
-      child(containerId, childArgs);
       break;
     }
     default: {

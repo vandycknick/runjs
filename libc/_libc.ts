@@ -20,8 +20,22 @@ export const libc = Deno.dlopen("libc.so.6", {
     parameters: ["pointer", "usize"],
     result: "i32",
   },
+  fork: {
+    parameters: [],
+    result: "i32",
+  },
   execve: {
     parameters: ["pointer", "pointer", "pointer"],
+    result: "i32",
+  },
+
+  // #include <wait.h>
+  wait: {
+    parameters: ["pointer"],
+    result: "i32",
+  },
+  waitpid: {
+    parameters: ["i32", "pointer", "i32"],
     result: "i32",
   },
 
