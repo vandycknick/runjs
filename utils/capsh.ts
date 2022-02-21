@@ -53,42 +53,42 @@ set = libc.symbols.prctl(PR_GET_SECUREBITS, 0, 0, 0, 0) as number;
 const binary = (n: number): string => (n >>> 0).toString(2);
 
 // https://github.com/torvalds/linux/blob/df0cc57e057f18e44dac8e6c18aba47ab53202f9/include/uapi/linux/securebits.h
-const issecureMask = (x: number) => 1 << x;
+const isSecureMask = (x: number) => 1 << x;
 
 const SECURE_NOROOT = 0;
 const SECURE_NOROOT_LOCKED = 1; // make bit-0 immutable
 
-const SECBIT_NOROOT = issecureMask(SECURE_NOROOT);
-const SECBIT_NOROOT_LOCKED = issecureMask(SECURE_NOROOT_LOCKED);
+const SECBIT_NOROOT = isSecureMask(SECURE_NOROOT);
+const SECBIT_NOROOT_LOCKED = isSecureMask(SECURE_NOROOT_LOCKED);
 
 const SECURE_NO_SETUID_FIXUP = 2;
 const SECURE_NO_SETUID_FIXUP_LOCKED = 3; // make bit-2 immutable
 
-const SECBIT_NO_SETUID_FIXUP = issecureMask(SECURE_NO_SETUID_FIXUP);
-const SECBIT_NO_SETUID_FIXUP_LOCKED = issecureMask(
+const SECBIT_NO_SETUID_FIXUP = isSecureMask(SECURE_NO_SETUID_FIXUP);
+const SECBIT_NO_SETUID_FIXUP_LOCKED = isSecureMask(
   SECURE_NO_SETUID_FIXUP_LOCKED
 );
 
 const SECURE_KEEP_CAPS = 4;
 const SECURE_KEEP_CAPS_LOCKED = 5; // make bit-4 immutable
 
-const SECBIT_KEEP_CAPS = issecureMask(SECURE_KEEP_CAPS);
-const SECBIT_KEEP_CAPS_LOCKED = issecureMask(SECURE_KEEP_CAPS_LOCKED);
+const SECBIT_KEEP_CAPS = isSecureMask(SECURE_KEEP_CAPS);
+const SECBIT_KEEP_CAPS_LOCKED = isSecureMask(SECURE_KEEP_CAPS_LOCKED);
 
 // When set, a process cannot add new capabilities to its ambient set.
 const SECURE_NO_CAP_AMBIENT_RAISE = 6;
 const SECURE_NO_CAP_AMBIENT_RAISE_LOCKED = 7; // make bit-6 immutable
 
-const SECBIT_NO_CAP_AMBIENT_RAISE = issecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
-const SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED = issecureMask(
+const SECBIT_NO_CAP_AMBIENT_RAISE = isSecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
+const SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED = isSecureMask(
   SECURE_NO_CAP_AMBIENT_RAISE_LOCKED
 );
 
 const SECURE_ALL_BITS =
-  issecureMask(SECURE_NOROOT) |
-  issecureMask(SECURE_NO_SETUID_FIXUP) |
-  issecureMask(SECURE_KEEP_CAPS) |
-  issecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
+  isSecureMask(SECURE_NOROOT) |
+  isSecureMask(SECURE_NO_SETUID_FIXUP) |
+  isSecureMask(SECURE_KEEP_CAPS) |
+  isSecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
 const SECURE_ALL_LOCKS = SECURE_ALL_BITS << 1;
 
 const b = binary(set);
