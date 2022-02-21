@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "flags/": "https://deno.land/std@0.125.0/flags/",
+    "libc/": "./libc/",
+    "libpcap/": "./libpcap/"
+  }
+}

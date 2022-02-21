@@ -1,4 +1,4 @@
-import { parse } from "https://deno.land/std@0.121.0/flags/mod.ts";
+import { parse } from "flags/mod.ts";
 
 import {
   CLONE_NEWIPC,
@@ -24,7 +24,7 @@ import {
   setHostname,
   umount,
   unshare,
-} from "../libc/mod.ts";
+} from "libc/mod.ts";
 
 const NAME = "runjs";
 const VERSION = "1.0.0";
