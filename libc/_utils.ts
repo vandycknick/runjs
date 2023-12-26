@@ -1,4 +1,4 @@
-import { errno, EINTR } from "./errno.ts";
+import { EINTR, errno } from "./errno.ts";
 import { strerror } from "./string.ts";
 
 export const encoder = new TextEncoder();

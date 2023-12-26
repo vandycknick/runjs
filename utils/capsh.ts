@@ -1,12 +1,12 @@
 import { printf } from "https://deno.land/std@0.120.0/fmt/printf.ts";
 
 import {
-  cap_get_proc,
   cap_free,
-  cap_to_text,
-  cap_to_name,
-  cap_get_bound,
   cap_get_ambient,
+  cap_get_bound,
+  cap_get_proc,
+  cap_to_name,
+  cap_to_text,
 } from "../libcap/mod.ts";
 
 const libc = Deno.dlopen("libc.so.6", {
@@ -19,7 +19,7 @@ const libc = Deno.dlopen("libc.so.6", {
 const all = cap_get_proc();
 
 const current = cap_to_text(all);
-console.log(`Current: ${current}`);
+printf(`Current: ${current}\n`);
 
 let bounding = "";
 let set = 0;
@@ -30,7 +30,7 @@ for (let cap = 0; (set = cap_get_bound(cap)) >= 0; cap++) {
   bounding = `${bounding}${name},`;
 }
 
-console.log(`Bounding set = ${bounding.slice(0, -1)}`);
+printf(`Bounding set = ${bounding.slice(0, -1)}\n`);
 
 let ambient = "";
 set = 0;
@@ -41,7 +41,7 @@ for (let cap = 0; (set = cap_get_ambient(cap)) >= 0; cap++) {
   ambient = `${ambient}${name},`;
 }
 
-console.log(`Ambient set = ${ambient.slice(0, -1)}`);
+printf(`Ambient set = ${ambient.slice(0, -1)}\n`);
 
 if (cap_free(all) != 0) {
   throw new Error("Can't free up cap_t ref");
@@ -66,7 +66,7 @@ const SECURE_NO_SETUID_FIXUP_LOCKED = 3; // make bit-2 immutable
 
 const SECBIT_NO_SETUID_FIXUP = isSecureMask(SECURE_NO_SETUID_FIXUP);
 const SECBIT_NO_SETUID_FIXUP_LOCKED = isSecureMask(
-  SECURE_NO_SETUID_FIXUP_LOCKED
+  SECURE_NO_SETUID_FIXUP_LOCKED,
 );
 
 const SECURE_KEEP_CAPS = 4;
@@ -81,11 +81,10 @@ const SECURE_NO_CAP_AMBIENT_RAISE_LOCKED = 7; // make bit-6 immutable
 
 const SECBIT_NO_CAP_AMBIENT_RAISE = isSecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
 const SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED = isSecureMask(
-  SECURE_NO_CAP_AMBIENT_RAISE_LOCKED
+  SECURE_NO_CAP_AMBIENT_RAISE_LOCKED,
 );
 
-const SECURE_ALL_BITS =
-  isSecureMask(SECURE_NOROOT) |
+const SECURE_ALL_BITS = isSecureMask(SECURE_NOROOT) |
   isSecureMask(SECURE_NO_SETUID_FIXUP) |
   isSecureMask(SECURE_KEEP_CAPS) |
   isSecureMask(SECURE_NO_CAP_AMBIENT_RAISE);
@@ -97,17 +96,17 @@ printf("Securebits: 0%o/0x%x/%v'b%b\n", set, set, b.length >>> 0, set);
 printf(
   " secure-noroot: %s (%s)\n",
   set & SECBIT_NOROOT ? "yes" : "no",
-  set & SECBIT_NOROOT_LOCKED ? "locked" : "unlocked"
+  set & SECBIT_NOROOT_LOCKED ? "locked" : "unlocked",
 );
 printf(
   " secure-no-suid-fixup: %s (%s)\n",
   set & SECBIT_NO_SETUID_FIXUP ? "yes" : "no",
-  set & SECBIT_NO_SETUID_FIXUP_LOCKED ? "locked" : "unlocked"
+  set & SECBIT_NO_SETUID_FIXUP_LOCKED ? "locked" : "unlocked",
 );
 printf(
   " secure-keep-caps: %s (%s)\n",
   set & SECBIT_KEEP_CAPS ? "yes" : "no",
-  set & SECBIT_KEEP_CAPS_LOCKED ? "locked" : "unlocked"
+  set & SECBIT_KEEP_CAPS_LOCKED ? "locked" : "unlocked",
 );
 
 const CAP_CHOWN = 0;
@@ -117,6 +116,6 @@ if (CAP_AMBIENT_SUPPORTED()) {
   printf(
     " secure-no-ambient-raise: %s (%s)\n",
     set & SECBIT_NO_CAP_AMBIENT_RAISE ? "yes" : "no",
-    set & SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED ? "locked" : "unlocked"
+    set & SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED ? "locked" : "unlocked",
   );
 }

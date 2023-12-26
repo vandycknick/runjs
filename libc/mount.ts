@@ -1,5 +1,5 @@
 import { libc } from "./_libc.ts";
-import { throwForLastErrorIf, encoder } from "./_utils.ts";
+import { encoder, throwForLastErrorIf } from "./_utils.ts";
 
 // Mount flags: https://github.com/torvalds/linux/blob/e55f0c439a2681a3c299bedd99ebe998049fa508/include/uapi/linux/mount.h
 export const MS_RDONLY = 1; // Mount read-only
@@ -41,22 +41,23 @@ export const mount = (
   target: string,
   fileSystemType: string | null,
   mountFlags: number,
-  data: string | null
+  data: string | null,
 ): void => {
   const pSource = encoder.encode(`${source}\0`);
   const pTarget = encoder.encode(`${target}\0`);
-  const pFileSystemType =
-    fileSystemType !== null ? encoder.encode(`${fileSystemType}\0`) : null;
+  const pFileSystemType = fileSystemType !== null
+    ? encoder.encode(`${fileSystemType}\0`)
+    : null;
   const pData = data !== null ? encoder.encode(`${data}\0`) : null;
 
   const result = libc.symbols.mount(
-    pSource,
-    pTarget,
-    pFileSystemType,
+    Deno.UnsafePointer.of(pSource),
+    Deno.UnsafePointer.of(pTarget),
+    pFileSystemType !== null ? Deno.UnsafePointer.of(pFileSystemType) : null,
     // Ensure mountFlags is an unsigned long at all times
     mountFlags >>> 0,
-    pData
-  ) as number;
+    pData !== null ? Deno.UnsafePointer.of(pData) : null,
+  );
 
   throwForLastErrorIf(result);
 };
@@ -64,6 +65,9 @@ export const mount = (
 export const umount = (target: string, flags?: number): void => {
   const pTarget = encoder.encode(`${target}\0`);
 
-  const result = libc.symbols.umount2(pTarget, flags ?? 0);
+  const result = libc.symbols.umount2(
+    Deno.UnsafePointer.of(pTarget),
+    flags ?? 0,
+  );
   throwForLastErrorIf(result as number);
 };

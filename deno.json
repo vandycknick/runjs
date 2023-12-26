@@ -1,4 +1,9 @@
 {
+  "compilerOptions": {
+    "allowJs": false,
+    "lib": ["deno.unstable", "deno.window"],
+    "strict": true
+  },
   "imports": {
     "flags/": "https://deno.land/std@0.125.0/flags/",
     "libc/": "./libc/",

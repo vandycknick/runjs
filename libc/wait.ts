@@ -1,15 +1,16 @@
 import { libc } from "./_libc.ts";
 import { throwForLastError } from "./_utils.ts";
-import { errno, EINTR } from "./errno.ts";
+import { EINTR, errno } from "./errno.ts";
 
 export const wait = () => libc.symbols.wait(null) as number;
 
 export const waitPid = (pid: number) => {
   const buffer = new Int32Array(1);
+  const buffer_ptr = Deno.UnsafePointer.of(buffer);
   let rpid = 0;
 
   do {
-    rpid = libc.symbols.waitpid(pid, buffer, 0) as number;
+    rpid = libc.symbols.waitpid(pid, buffer_ptr, 0);
   } while (rpid == -1 && errno() == EINTR);
 
   if (pid != rpid) throwForLastError();

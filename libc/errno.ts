@@ -131,7 +131,12 @@ export const EOWNERDEAD = 130;
 export const ENOTRECOVERABLE = 131;
 
 export const errno = (): number => {
-  const pErrno = libc.symbols.__errno_location() as Deno.UnsafePointer;
+  const pErrno = libc.symbols.__errno_location();
+
+  if (pErrno == null) {
+    throw new Error("__errno_location not pointing to valid memory");
+  }
+
   const view = new Deno.UnsafePointerView(pErrno);
   return view.getInt32();
 };

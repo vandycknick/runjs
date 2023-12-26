@@ -7,9 +7,9 @@ clean:
 
 .PHONY: install
 install:
-	deno run --allow-ffi --unstable --import-map ${IMPORT_MAP} src/deps.ts
+	deno run --allow-ffi --unstable src/deps.ts
 
 .PHONY: build
 build: install
 	@mkdir -p $(shell dirname ${OUTPUT})
-	deno compile -A --unstable --import-map ${IMPORT_MAP} --output ${OUTPUT} src/main.ts
+	deno compile -A --unstable --output ${OUTPUT} src/main.ts

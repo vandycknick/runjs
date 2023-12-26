@@ -7,7 +7,6 @@ import {
   CLONE_NEWUTS,
   exec,
   fork,
-  waitPid,
   MNT_DETACH,
   MNT_FORCE,
   mount,
@@ -24,6 +23,7 @@ import {
   setHostname,
   umount,
   unshare,
+  waitPid,
 } from "libc/mod.ts";
 
 const NAME = "runjs";
@@ -48,7 +48,7 @@ const run = (args: string[]) => {
   Deno.writeTextFileSync(
     `${overlayRoot}/hostname`,
     getHostNameFromContainerId(containerId),
-    { create: true }
+    { create: true },
   );
 
   Deno.writeTextFileSync(
@@ -59,7 +59,7 @@ const run = (args: string[]) => {
       `ff00::0 ip6-mcastprefix\n` +
       `ff02::1 ip6-allnodes\n` +
       `ff02::2 ip6-allrouters\n`,
-    { create: true }
+    { create: true },
   );
 
   // mount -t overlay overlay -o lowerdir="$LIB_ROOT/images/$IMAGE-latest,upperdir=$LIB_ROOT/containers/$ID/diff,workdir=$LIB_ROOT/containers/$ID/work" "$LIB_ROOT/containers/$ID/merged"
@@ -68,7 +68,7 @@ const run = (args: string[]) => {
     `${overlayRoot}/merged`,
     "overlay",
     MS_MGC_VAL,
-    `lowerdir=${LIB_ROOT}/images/ubuntu,upperdir=${overlayRoot}/diff,workdir=${overlayRoot}/work\0`
+    `lowerdir=${LIB_ROOT}/images/debug,upperdir=${overlayRoot}/diff,workdir=${overlayRoot}/work\0`,
   );
 
   unshare(CLONE_NEWPID | CLONE_NEWUTS | CLONE_NEWIPC);
@@ -103,7 +103,7 @@ const child = (containerId: string, args: string[]) => {
 
   unshare(CLONE_NEWNS);
 
-  // // Set hostname to containerId
+  // Set hostname to containerId
   setHostname(getHostNameFromContainerId(containerId));
 
   // ensure that changes to our mount namespace do not "leak" to
@@ -122,7 +122,7 @@ const child = (containerId: string, args: string[]) => {
     "/etc/resolv.conf",
     null,
     MS_MGC_VAL | MS_BIND,
-    null
+    null,
   );
 
   ["hostname", "hosts"].forEach((file) => {
@@ -132,7 +132,7 @@ const child = (containerId: string, args: string[]) => {
       `/etc/${file}`,
       null,
       MS_MGC_VAL | MS_BIND,
-      null
+      null,
     );
   });
 
@@ -145,7 +145,7 @@ const child = (containerId: string, args: string[]) => {
     "/proc",
     "proc",
     MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME,
-    null
+    null,
   );
 
   mount(
@@ -153,7 +153,7 @@ const child = (containerId: string, args: string[]) => {
     "/sys",
     "sysfs",
     MS_RDONLY | MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME,
-    null
+    null,
   );
 
   // tmpfs on /dev type tmpfs (rw,nosuid,seclabel,size=65536k,mode=755)
@@ -165,7 +165,7 @@ const child = (containerId: string, args: string[]) => {
     "/dev/shm",
     "tmpfs",
     MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME,
-    "size=65536k"
+    "size=65536k",
   );
 
   Deno.mkdirSync("/dev/pts", { recursive: true });
@@ -174,7 +174,7 @@ const child = (containerId: string, args: string[]) => {
     "/dev/pts",
     "devpts",
     MS_NOSUID | MS_NOEXEC | MS_RELATIME,
-    "gid=5,mode=620,ptmxmode=666"
+    "gid=5,mode=620,ptmxmode=666",
   );
 
   const binary = args[0];
@@ -207,7 +207,7 @@ const main = (args: string[]) => {
           `     -h, --help\n` +
           `         Prints help information\n` +
           `     -v, --version\n` +
-          `         Prints version information`
+          `         Prints version information`,
       );
       return 0;
     }
@@ -224,7 +224,7 @@ const main = (args: string[]) => {
       `\x1b[31merror\x1b[0m: ${ex.message}\n\n` +
         `USAGE:\n` +
         `     ${NAME} <binary> <args>... \n\n` +
-        `For more information try --help`
+        `For more information try --help`,
     );
     return 1;
   }

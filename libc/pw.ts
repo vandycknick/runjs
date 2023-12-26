@@ -4,43 +4,46 @@ const encoder = new TextEncoder();
 
 export const getpwnam = (name: string) => {
   const buffer = encoder.encode(name);
-  const pointer = libc.symbols.getpwnam(buffer) as Deno.UnsafePointer;
-
-  if (pointer.value === 0n) return null;
+  const pointer = libc.symbols.getpwnam(Deno.UnsafePointer.of(buffer));
   return parsePasswdStruct(pointer);
 };
 
 export const getpwuid = (uid: number) => {
-  const pointer = libc.symbols.getpwuid(uid) as Deno.UnsafePointer;
-
-  if (pointer.value === 0n) return null;
+  const pointer = libc.symbols.getpwuid(uid);
   return parsePasswdStruct(pointer);
 };
 
-const parsePasswdStruct = (pointer: Deno.UnsafePointer) => {
-  const view = new Deno.UnsafePointerView(pointer);
-  const pwName = new Deno.UnsafePointerView(
-    new Deno.UnsafePointer(view.getBigUint64())
-  ).getCString();
+const parsePasswdStruct = (pointer: Deno.PointerValue<unknown>) => {
+  if (pointer === null) return null;
 
-  const pwPasswd = new Deno.UnsafePointerView(
-    new Deno.UnsafePointer(view.getBigUint64(8))
-  ).getCString();
+  const view = new Deno.UnsafePointerView(pointer);
+  const pwNamePtr = view.getPointer();
+  const pwName = pwNamePtr !== null
+    ? new Deno.UnsafePointerView(pwNamePtr).getCString()
+    : "";
+
+  const pwPasswdPtr = view.getPointer(8);
+  const pwPasswd = pwPasswdPtr !== null
+    ? new Deno.UnsafePointerView(pwPasswdPtr).getCString()
+    : "";
 
   const pwUid = view.getInt32(16);
   const pwGid = view.getInt32(20);
 
-  const pwGecos = new Deno.UnsafePointerView(
-    new Deno.UnsafePointer(view.getBigUint64(24))
-  ).getCString();
+  const pwGecosPtr = view.getPointer(24);
+  const pwGecos = pwGecosPtr !== null
+    ? new Deno.UnsafePointerView(pwGecosPtr).getCString()
+    : "";
 
-  const pwDir = new Deno.UnsafePointerView(
-    new Deno.UnsafePointer(view.getBigUint64(32))
-  ).getCString();
+  const pwDirPtr = view.getPointer(32);
+  const pwDir = pwDirPtr !== null
+    ? new Deno.UnsafePointerView(pwDirPtr).getCString()
+    : "";
 
-  const pwShell = new Deno.UnsafePointerView(
-    new Deno.UnsafePointer(view.getBigUint64(40))
-  ).getCString();
+  const pwShellPtr = view.getPointer(40);
+  const pwShell = pwShellPtr !== null
+    ? new Deno.UnsafePointerView(pwShellPtr).getCString()
+    : "";
 
   return {
     name: pwName,

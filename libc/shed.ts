@@ -40,6 +40,9 @@ export const unshare = (flags: number): void => {
 export const pivotRoot = (newRoot: string, putOld: string): void => {
   const newRootArray = encoder.encode(`${newRoot}\0`);
   const putOldArray = encoder.encode(`${putOld}\0`);
-  const result = libc.symbols.pivot_root(newRootArray, putOldArray) as number;
+  const result = libc.symbols.pivot_root(
+    Deno.UnsafePointer.of(newRootArray),
+    Deno.UnsafePointer.of(putOldArray),
+  );
   throwForLastErrorIf(result);
 };

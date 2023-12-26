@@ -25,22 +25,24 @@ const libcap = Deno.dlopen("libcap.so.2", {
   },
 });
 
-type cap_t = Deno.UnsafePointer;
+type cap_t = Deno.PointerValue;
 type cap_value_t = number;
 
 export const cap_get_proc = () => libcap.symbols.cap_get_proc() as cap_t;
 
-export const cap_free = (pointer: Deno.UnsafePointer) =>
-  libcap.symbols.cap_free(pointer) as number;
+export const cap_free = (pointer: Deno.PointerValue) =>
+  libcap.symbols.cap_free(pointer);
 
 export const cap_get_bound = (value: cap_value_t): number =>
-  libcap.symbols.cap_get_bound(value) as number;
+  libcap.symbols.cap_get_bound(value);
 
 export const cap_get_ambient = (value: cap_value_t): number =>
-  libcap.symbols.cap_get_ambient(value) as number;
+  libcap.symbols.cap_get_ambient(value);
 
 export const cap_to_name = (value: cap_value_t): string => {
-  const pointer = libcap.symbols.cap_to_name(value) as Deno.UnsafePointer;
+  const pointer = libcap.symbols.cap_to_name(value);
+  if (pointer === null) return "";
+
   const view = new Deno.UnsafePointerView(pointer);
   const name = view.getCString();
 
@@ -52,7 +54,9 @@ export const cap_to_name = (value: cap_value_t): string => {
 };
 
 export const cap_to_text = (cap: cap_t): string => {
-  const pointer = libcap.symbols.cap_to_text(cap, null) as Deno.UnsafePointer;
+  const pointer = libcap.symbols.cap_to_text(cap, null);
+  if (pointer === null) return "";
+
   const view = new Deno.UnsafePointerView(pointer);
   const text = view.getCString();
 
